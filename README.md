@@ -4,8 +4,7 @@ A DeepSeek Harness plugin that read-only scans your local session logs and rende
 **GitHub-style token usage heat map** with a granularity-linked per-model breakdown —
 plus an instant "tokens today" badge on hover. Everything stays on your machine.
 
-<!-- Demo GIF placeholder: drop your recording at docs/demo.gif and uncomment
-![demo](docs/demo.gif) -->
+![demo](docs/demo.gif)
 
 [中文说明](./README.zh.md)
 

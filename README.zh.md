@@ -4,8 +4,7 @@ DeepSeek Harness Token 用量插件：只读扫描本地会话日志，在 Web �
 **GitHub 风格用量热力图 + 跟随粒度联动的模型明细**，侧边栏图标悬停即见
 「今日 token」——全程纯本地，不上传任何数据。
 
-<!-- 演示 GIF 占位：录屏后放到 docs/demo.gif 并取消注释
-![demo](docs/demo.gif) -->
+![demo](docs/demo.gif)
 
 ## 特性
 
