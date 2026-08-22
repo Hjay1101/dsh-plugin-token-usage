@@ -1,0 +1,5 @@
+- insert:
+    - id: token-usage
+      name: 'dsh-plugin-token-usage'
+      config:
+        ttlMs: 15000

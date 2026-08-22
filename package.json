@@ -1,0 +1,52 @@
+{
+	"name": "dsh-plugin-token-usage",
+	"version": "2.1.0",
+	"description": "DeepSeek Harness token usage plugin: a GitHub-style heat map (day/week/month) of local session logs with granularity-linked per-model breakdown, cache hit rate, and an instant hover-today badge on the sidebar icon. Read-only — nothing leaves your machine.",
+	"license": "MIT",
+	"keywords": [
+		"deepseek-harness",
+		"dsh",
+		"plugin",
+		"token",
+		"usage",
+		"analytics",
+		"heatmap",
+		"cache-hit-rate"
+	],
+	"type": "module",
+	"main": "./index.js",
+	"files": [
+		"index.js",
+		"client.js",
+		"cordis.patch.yml",
+		"package.json",
+		"README.md",
+		"README.zh.md",
+		"LICENSE"
+	],
+	"exports": {
+		".": "./index.js",
+		"./client": "./client.js",
+		"./package.json": "./package.json"
+	},
+	"dsh": {
+		"client": {
+			"inject": [],
+			"platform": "web"
+		},
+		"bundle": {
+			"patch": "./cordis.patch.yml"
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Hjay1101/dsh-plugin-token-usage.git"
+	},
+	"author": "Hjay1101",
+	"peerDependencies": {
+		"react": "^18.2.0",
+		"@deepseek-ai/cordis": "^4.0.1",
+		"@deepseek-ai/schemastery": "^3.18.1",
+		"@deepseek-ai/dsh-tools": "*"
+	}
+}
