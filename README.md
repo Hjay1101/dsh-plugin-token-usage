@@ -57,6 +57,11 @@ model tool) activates automatically.
 
 > ⚠️ Pick one. If the bundle patch already mounts it, do NOT manually insert the same id —
 > that would double-load the plugin.
+>
+> **Upgrading from the manual install?** If you previously added the `insert` block above
+> to your profile, **delete it before restarting** — with the self-mounting bundle patch
+> present, the same id would be registered twice and startup crashes with
+> `duplicate loader entry id: token-usage`.
 
 ## Configuration
 

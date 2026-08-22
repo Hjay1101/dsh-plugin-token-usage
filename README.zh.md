@@ -47,6 +47,11 @@ dsh plugin --profile web add dsh-plugin-token-usage
 3. 重启 DeepSeek Harness。
 
 > ⚠️ 二选一。若已用方式一自挂载，不要再手动 insert 同名 id，否则双重加载。
+>
+> **老用户升级必读**：如果你之前按旧教程在 profile 里手动加过上面的 `insert`
+> 条目，升级到自挂载版后请**先删除那条 insert 再重启**——包内 patch 与手动
+> 条目同时存在会让同一 id 注册两次，启动直接崩溃（报
+> `duplicate loader entry id: token-usage`）。
 
 ## 配置
 
