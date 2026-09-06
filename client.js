@@ -3,7 +3,7 @@
 // lazy-CJS 格式交给客户端模块加载器。做三件事：
 //   1. 侧边栏底部动作区注册「Token 用量」图标按钮（设置旁）
 //   2. 点击后弹出页面居中的模态仪表盘（Esc / 点外部 / 按钮关闭）
-//   3. 运行卡片槽位（tool.view.cordis/self）挂同款面板
+//   3. 运行卡片槽位（tool.call.toolview/usage_report）挂同款面板
 //
 // 数据来自宿主半的 POST /token-usage/api/report；30 秒自动刷新。
 
@@ -653,9 +653,12 @@ window.__ModuleLoader__.load({
 		}
 		function apply(ctx) {
 			ensureCss();
-			ctx.slots.inject("tool.view.cordis", function () {
+			// 工具卡片槽位：新版本 tool.call.toolview 键域开放，按工具线名注册
+			// （usage_report 未占用）；旧 tool.view.cordis/self 已被动态 Guard 接管，
+			// 静态插件注册不再生效。
+			ctx.slots.inject("tool.call.toolview", function () {
 				return ctx.slots.register(
-					{ name: "tool.view.cordis", key: "self" },
+					{ name: "tool.call.toolview", key: "usage_report" },
 					function (props) { return React.createElement(UsagePanel, props) }
 				);
 			});
