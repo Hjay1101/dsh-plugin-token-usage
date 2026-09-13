@@ -7,6 +7,10 @@ DeepSeek Harness Token 用量插件：只读扫描本地会话日志，在 Web �
 > 兼容性：面向新一代 DSH 架构（≥ `0.1.2-rc.1`）。工具运行卡片挂载于
 > `tool.call.toolview` 键域、以工具线名 `usage_report` 注册；早于该版本的
 > `tool.view.cordis/self` 槽位已被动态 Guard 接管，不再适用于静态插件。
+>
+> 日志格式同时兼容两代：旧 `session.jsonl.zstd`（`assistant/chunk` + `chunk.usage`）
+> 与新 `session.v3.jsonl.zstd`（`assistant/message` + `data.usage`，模型按消息来源
+> 精确归属）。同一会话目录内两代并存时只读最高版本，避免同一段历史被重复计数。
 
 ![demo](docs/demo.gif)
 

@@ -8,6 +8,12 @@ plus an instant "tokens today" badge on hover. Everything stays on your machine.
 > run-card registers in the `tool.call.toolview` key domain under the wire tool name
 > `usage_report`; the legacy `tool.view.cordis/self` slot is now owned by the dynamic
 > Client Guard and no longer applies to static plugins.
+>
+> Both session-log generations are supported: the old `session.jsonl.zstd`
+> (`assistant/chunk` + `chunk.usage`) and the new `session.v3.jsonl.zstd`
+> (`assistant/message` + `data.usage`, model attributed per message source). When both
+> coexist in one session directory only the highest version is read, so no stretch of
+> history is counted twice.
 
 ![demo](docs/demo.gif)
 
