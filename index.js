@@ -1,7 +1,7 @@
 // dsh-plugin-token-usage —— Host 半。
 //
 // 职责：
-//   1. 扫描 ~/.dsh/sessions/**/session.jsonl.zstd，按 provider/model 聚合
+//   1. 扫描 ~/.dsh/sessions/**/session*.jsonl.zstd（兼容 v3 代命名），按 provider/model 聚合
 //      input/output/cacheRead/cacheWrite/reasoning tokens 与命中率，
 //      并产出「按天」「按会话」两个维度。
 //   2. 注册模型工具 usage_report（对话中可随时调用）。
@@ -33,9 +33,14 @@ export const inject = ["webServer", "tools"];
 
 // ---------- 会话日志发现 ----------
 
-/** 递归收集 root 下所有 session.jsonl.zstd 的绝对路径。 */
+/**
+ * 递归收集 root 下所有会话日志的绝对路径。
+ * 兼容两代命名：旧 `session.jsonl.zstd` 与新 `session.v3.jsonl.zstd`。
+ * 同一会话目录里两者并存时只取「最高版本」那份——新版是同一会话的全量重写，
+ * 两份都读会把同一段历史重复计数。
+ */
 async function findSessionLogs(root) {
-	const found = [];
+	const byDir = new Map();
 	async function walk(dir) {
 		let entries;
 		try {
@@ -45,11 +50,23 @@ async function findSessionLogs(root) {
 		}
 		for (const entry of entries) {
 			const child = join(dir, entry.name);
-			if (entry.isDirectory()) await walk(child);
-			else if (entry.name === "session.jsonl.zstd") found.push(child);
+			if (entry.isDirectory()) {
+				await walk(child);
+				continue;
+			}
+			if (!/^session(\.[0-9A-Za-z_-]+)?\.jsonl\.zstd$/.test(entry.name)) continue;
+			const list = byDir.get(dir);
+			if (list === undefined) byDir.set(dir, [entry.name]);
+			else list.push(entry.name);
 		}
 	}
 	await walk(root);
+	const found = [];
+	for (const [dir, names] of byDir) {
+		const versioned = names.filter((name) => name !== "session.jsonl.zstd").sort();
+		const pick = versioned.length > 0 ? versioned[versioned.length - 1] : "session.jsonl.zstd";
+		found.push(join(dir, pick));
+	}
 	return found;
 }
 
@@ -158,6 +175,25 @@ async function scanAllLogs(timeoutMs) {
 		let sessionId = "";
 		let cwd = "";
 		let modelKey = null;
+		// 把一次用量记进五个维度（模型 / 模型×日 / 日 / 会话 / 会话×日）。
+		function record(mk, usage, time) {
+			addUsage(byModel.get(mk) ?? byModel.set(mk, newBucket(mk)).get(mk), usage, time);
+			let day = "unknown";
+			if (time > 0) day = localDayOf(time);
+			let mdMap = byModelDay.get(mk);
+			if (mdMap === undefined) byModelDay.set(mk, (mdMap = new Map()));
+			const mdb = mdMap.get(day) ?? mdMap.set(day, newBucket(day)).get(day);
+			addUsage(mdb, usage, time);
+			addUsage(byDay.get(day) ?? byDay.set(day, newBucket(day)).get(day), usage, time);
+			const sessionKey = sessionId || log;
+			const sessionBucket = bySession.get(sessionKey) ?? bySession.set(sessionKey, newBucket(sessionKey)).get(sessionKey);
+			addUsage(sessionBucket, usage, time);
+			if (!sessionBucket.cwd) sessionBucket.cwd = cwd;
+			let dayMap = bySessionDay.get(sessionKey);
+			if (dayMap === undefined) bySessionDay.set(sessionKey, (dayMap = new Map()));
+			const sdBucket = dayMap.get(day) ?? dayMap.set(day, newBucket(day)).get(day);
+			addUsage(sdBucket, usage, time);
+		}
 		for (const line of stdout.split("\n")) {
 			if (!line) continue;
 			let event;
@@ -178,26 +214,25 @@ async function scanAllLogs(timeoutMs) {
 				}
 				continue;
 			}
+			const time = typeof event.time === "number" ? event.time : 0;
+			// 新一代格式：assistant/message 顶层带 usage，并按消息来源精确归属模型
+			// （会话中途换模型也不会误记到旧模型上）。
+			if (event.type === "assistant/message") {
+				const usage = event.data?.usage;
+				if (!usage || typeof usage !== "object") continue;
+				const src = event.data?.message?.source;
+				const mk = src && typeof src.provider === "string" && typeof src.model === "string"
+					? `${src.provider}/${src.model}`
+					: modelKey;
+				if (mk === null) continue;
+				record(mk, usage, time);
+				continue;
+			}
+			// 旧一代格式：assistant/chunk 内的 usage 块，沿用最近一次 request/header 的模型。
 			if (event.type !== "assistant/chunk" || modelKey === null) continue;
 			const chunk = event.data?.chunk;
 			if (!chunk || chunk.type !== "usage" || !chunk.usage) continue;
-			const time = typeof event.time === "number" ? event.time : 0;
-			addUsage(byModel.get(modelKey) ?? byModel.set(modelKey, newBucket(modelKey)).get(modelKey), chunk.usage, time);
-			let day = "unknown";
-			if (time > 0) day = localDayOf(time);
-			let mdMap = byModelDay.get(modelKey);
-			if (mdMap === undefined) byModelDay.set(modelKey, (mdMap = new Map()));
-			const mdb = mdMap.get(day) ?? mdMap.set(day, newBucket(day)).get(day);
-			addUsage(mdb, chunk.usage, time);
-			addUsage(byDay.get(day) ?? byDay.set(day, newBucket(day)).get(day), chunk.usage, time);
-			const sessionKey = sessionId || log;
-			const sessionBucket = bySession.get(sessionKey) ?? bySession.set(sessionKey, newBucket(sessionKey)).get(sessionKey);
-			addUsage(sessionBucket, chunk.usage, time);
-			if (!sessionBucket.cwd) sessionBucket.cwd = cwd;
-			let dayMap = bySessionDay.get(sessionKey);
-			if (dayMap === undefined) bySessionDay.set(sessionKey, (dayMap = new Map()));
-			const sdBucket = dayMap.get(day) ?? dayMap.set(day, newBucket(day)).get(day);
-			addUsage(sdBucket, chunk.usage, time);
+			record(modelKey, chunk.usage, time);
 		}
 	}
 	// 8 路并发解压解析，全量扫描从 ~4s 压到亚秒级。

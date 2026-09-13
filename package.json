@@ -1,6 +1,6 @@
 {
 	"name": "dsh-plugin-token-usage",
-	"version": "2.2.0",
+	"version": "2.3.0",
 	"description": "DeepSeek Harness token usage plugin: a GitHub-style heat map (day/week/month) of local session logs with granularity-linked per-model breakdown, cache hit rate, and an instant hover-today badge on the sidebar icon. Read-only — nothing leaves your machine.",
 	"license": "MIT",
 	"keywords": [
