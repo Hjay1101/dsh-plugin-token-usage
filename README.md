@@ -4,7 +4,7 @@ A DeepSeek Harness plugin that read-only scans your local session logs and rende
 **GitHub-style token usage heat map** with a granularity-linked per-model breakdown —
 plus an instant "tokens today" badge on hover. Everything stays on your machine.
 
-> Compatibility: targets the new-generation DSH architecture (≥ `0.1.2-rc.1`). The tool
+> Compatibility: targets DSH `0.2.1-rc.2` through `0.2.x` (verified on `0.2.1-rc.3`). The tool
 > run-card registers in the `tool.call.toolview` key domain under the wire tool name
 > `usage_report`; the legacy `tool.view.cordis/self` slot is now owned by the dynamic
 > Client Guard and no longer applies to static plugins.

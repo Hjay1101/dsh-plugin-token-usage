@@ -4,7 +4,7 @@ DeepSeek Harness Token 用量插件：只读扫描本地会话日志，在 Web �
 **GitHub 风格用量热力图 + 跟随粒度联动的模型明细**，侧边栏图标悬停即见
 「今日 token」——全程纯本地，不上传任何数据。
 
-> 兼容性：面向新一代 DSH 架构（≥ `0.1.2-rc.1`）。工具运行卡片挂载于
+> 兼容性：面向 DSH `0.2.1-rc.2` ~ `0.2.x`（已在 `0.2.1-rc.3` 验证）。工具运行卡片挂载于
 > `tool.call.toolview` 键域、以工具线名 `usage_report` 注册；早于该版本的
 > `tool.view.cordis/self` 槽位已被动态 Guard 接管，不再适用于静态插件。
 >
